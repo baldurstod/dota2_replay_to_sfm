@@ -1,1 +1,1 @@
-# dota2_sfm
+# dota2_replay_to_sfm
