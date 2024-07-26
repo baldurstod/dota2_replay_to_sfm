@@ -17,6 +17,8 @@ import (
 	"github.com/dotabuff/manta/dota"
 )
 
+const DEG_TO_RAD = math.Pi / 180
+
 func TestReplay(t *testing.T) {
 	// Create a new parser instance from a file. Alternatively see NewParser([]byte)
 	filename := "./var/7865917356.dem"
@@ -48,13 +50,19 @@ func TestReplay(t *testing.T) {
 	}
 
 	tc := as.GetTransformControl("rootTransform")
-	var layer *sfm.LogLayer[vector.Vector3[float32]]
+	var posLayer *sfm.LogLayer[vector.Vector3[float32]]
+	var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
 	if tc != nil {
-		layer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
+		posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
+		rotLayer = any(tc.OrientationChannel.Log.GetLayer("quaternion log")).(*sfm.LogLayer[vector.Quaternion[float32]])
 	}
 
-	if layer == nil {
-		t.Error("layer == nil")
+	if posLayer == nil {
+		t.Error("posLayer == nil")
+		return
+	}
+	if rotLayer == nil {
+		t.Error("rotLayer == nil")
 		return
 	}
 
@@ -84,11 +92,19 @@ func TestReplay(t *testing.T) {
 					firstTick = p.Tick
 				}
 
-				layer.SetValue(float32(p.Tick-firstTick)/30., vector.Vector3[float32]{
+				time := float32(p.Tick-firstTick) / 30.
+
+				posLayer.SetValue(time, vector.Vector3[float32]{
 					(float32(m["CBodyComponent.m_cellX"].(uint64))-128)*128. + m["CBodyComponent.m_vecX"].(float32),
 					(float32(m["CBodyComponent.m_cellY"].(uint64))-128)*128. + m["CBodyComponent.m_vecY"].(float32),
 					(float32(m["CBodyComponent.m_cellZ"].(uint64))-128)*128. + m["CBodyComponent.m_vecZ"].(float32),
 				})
+
+				rot := m["CBodyComponent.m_angRotation"].([]float32)
+				q := vector.Quaternion[float32]{}
+				q.FromEuler(rot[0]*DEG_TO_RAD, rot[2]*DEG_TO_RAD, rot[1]*DEG_TO_RAD)
+
+				rotLayer.SetValue(time, q)
 			}
 		}
 
@@ -200,6 +216,8 @@ func initSession(t *testing.T) *sfm.AnimationSet {
 	shot1.Camera.Transform.Orientation.RotateZ(math.Pi)
 	shot1.Camera.Transform.Position.Set(200, 0, 150)
 	shot1.Camera.ZFar = 50000
+
+	shot1.MapName = "maps/dota.vmap"
 
 	as, err := c.CreateGameModel(shot1)
 	if err != nil {

@@ -10,6 +10,8 @@ github.com/baldurstod/go-source2-tools v0.0.29 h1:FwPQeQa8/KP3+xw1zxyFlUAqKVu/5a
 github.com/baldurstod/go-source2-tools v0.0.29/go.mod h1:cf7lt2mRqkxLnmfekCsUftJg469+qvviWsk9N4skDw0=
 github.com/baldurstod/go-vector v0.0.5 h1:ED6rM+homVhEv/GZ9ApZtB44ASkyzenGt/LImAPhy1E=
 github.com/baldurstod/go-vector v0.0.5/go.mod h1:B1yNl2t+n/Zf+pR/hdLCYpUvd+FAHt/Cx9kqVKNsN1o=
+github.com/baldurstod/go-vector v0.0.6 h1:jv5gP+g/WbOcDSiZCgMLpEHQzkhX9PinLqt/KXOboMY=
+github.com/baldurstod/go-vector v0.0.6/go.mod h1:B1yNl2t+n/Zf+pR/hdLCYpUvd+FAHt/Cx9kqVKNsN1o=
 github.com/baldurstod/vdf v0.0.8 h1:QfSbWpbtlC8hcGVuUndxB96wY1BEPJtT3WRGQwvF0NE=
 github.com/baldurstod/vdf v0.0.8/go.mod h1:HfdlJuWS/uEHoM9U8Kf5a+YiFSqrpEzHWkUuenhifMY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
