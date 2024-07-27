@@ -1,4 +1,4 @@
-module dota2_sfm
+module github.com/baldurstod/dota2_replay_to_sfm
 
 go 1.22.4
 
