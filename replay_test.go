@@ -2,10 +2,12 @@ package main_test
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	dota_items "github.com/baldurstod/go-dota2"
@@ -19,10 +21,13 @@ import (
 
 const DEG_TO_RAD = math.Pi / 180
 
+var characters = func() map[string]*sfm.AnimationSet { return make(map[string]*sfm.AnimationSet) }()
+var clip *sfm.FilmClip
+
 func TestReplay(t *testing.T) {
 	// Create a new parser instance from a file. Alternatively see NewParser([]byte)
 	filename := "./var/7865917356.dem"
-	filename = "./var/7382065860_1966034883.dem"
+	//filename = "./var/7382065860_1966034883.dem"
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatalf("unable to open file: %s", err)
@@ -44,68 +49,75 @@ func TestReplay(t *testing.T) {
 
 	//entities := make(map[string]*manta.Entity)
 	entities := make(map[string]map[string]any)
-	as := initSession(t)
-	if as == nil {
-		return
-	}
-
-	tc := as.GetTransformControl("rootTransform")
-	var posLayer *sfm.LogLayer[vector.Vector3[float32]]
-	var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
-	if tc != nil {
-		posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
-		rotLayer = any(tc.OrientationChannel.Log.GetLayer("quaternion log")).(*sfm.LogLayer[vector.Quaternion[float32]])
-	}
-
-	if posLayer == nil {
-		t.Error("posLayer == nil")
-		return
-	}
-	if rotLayer == nil {
-		t.Error("rotLayer == nil")
+	if err := initSession(); err != nil {
+		t.Error(err)
 		return
 	}
 
 	firstTick := uint32(0)
 
 	p.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+		className := e.GetClassName()
+		if !strings.HasPrefix(className, "CDOTA_Unit_Hero_") {
+			return nil
+
+		}
+
 		//log.Println(e, op)
-
-		if p.Tick < 50000 {
-			return nil
-
-		}
-		if (firstTick > 0) && (p.Tick-firstTick) > 2000 {
-			return nil
-		}
+		/*
+			if p.Tick < 2000 {
+				return nil
+			}
+		*/
+		/*
+			if p.Tick-firstTick > 1800 {
+				return nil
+			}
+		*/
 
 		m := e.Map()
-		_, exist := entities[e.GetClassName()]
+		_, exist := entities[className]
 		if !exist {
-			entities[e.GetClassName()] = m
+			entities[className] = m
 		}
 
 		if idx, found := m["m_pEntity.m_nameStringableIndex"]; found {
-			if idx.(int32) == 490 {
-				//log.Println(e, p)
-				if firstTick == 0 {
-					firstTick = p.Tick
-				}
 
-				time := float32(p.Tick-firstTick) / 30.
-
-				posLayer.SetValue(time, vector.Vector3[float32]{
-					(float32(m["CBodyComponent.m_cellX"].(uint64))-128)*128. + m["CBodyComponent.m_vecX"].(float32),
-					(float32(m["CBodyComponent.m_cellY"].(uint64))-128)*128. + m["CBodyComponent.m_vecY"].(float32),
-					(float32(m["CBodyComponent.m_cellZ"].(uint64))-128)*128. + m["CBodyComponent.m_vecZ"].(float32),
-				})
-
-				rot := m["CBodyComponent.m_angRotation"].([]float32)
-				q := vector.Quaternion[float32]{}
-				q.FromEuler(rot[0]*DEG_TO_RAD, rot[2]*DEG_TO_RAD, rot[1]*DEG_TO_RAD)
-
-				rotLayer.SetValue(time, q)
+			name, found := p.LookupStringByIndex("EntityNames", idx.(int32))
+			if !found {
+				return nil
 			}
+
+			as, err := getCharacter(name)
+			if err != nil {
+				t.Error(err)
+				return nil
+			}
+
+			//log.Println(e, p)
+			if firstTick == 0 {
+				firstTick = p.Tick
+			}
+
+			tc := as.GetTransformControl("rootTransform")
+			var posLayer *sfm.LogLayer[vector.Vector3[float32]]
+			var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
+			posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
+			rotLayer = any(tc.OrientationChannel.Log.GetLayer("quaternion log")).(*sfm.LogLayer[vector.Quaternion[float32]])
+
+			time := float32(p.Tick-firstTick) / 30.
+
+			posLayer.SetValue(time, vector.Vector3[float32]{
+				(float32(m["CBodyComponent.m_cellX"].(uint64))-128)*128. + m["CBodyComponent.m_vecX"].(float32),
+				(float32(m["CBodyComponent.m_cellY"].(uint64))-128)*128. + m["CBodyComponent.m_vecY"].(float32),
+				(float32(m["CBodyComponent.m_cellZ"].(uint64))-128)*128. + m["CBodyComponent.m_vecZ"].(float32),
+			})
+
+			rot := m["CBodyComponent.m_angRotation"].([]float32)
+			q := vector.Quaternion[float32]{}
+			q.FromEuler(rot[0]*DEG_TO_RAD, rot[2]*DEG_TO_RAD, rot[1]*DEG_TO_RAD)
+
+			rotLayer.SetValue(time, q)
 		}
 
 		return nil
@@ -138,7 +150,10 @@ func TestReplay(t *testing.T) {
 
 	// Start parsing the replay!
 	log.Printf("Start parsing\n")
-	p.Start()
+	if err := p.Start(); err != nil {
+		t.Error(err)
+		return
+	}
 
 	//log.Println(entities)
 	log.Println("Parse Complete!")
@@ -191,52 +206,102 @@ func initDota() error {
 
 var session *sfm.Session
 
-func initSession(t *testing.T) *sfm.AnimationSet {
+func initSession() error {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	if err := initDota(); err != nil {
-		t.Error(err)
-		return nil
-	}
-
-	c, err := dota2.NewCharacter("npc_dota_hero_dark_willow")
-	if err != nil {
-		t.Error(err)
-		return nil
+		return err
 	}
 
 	session = sfm.NewSession()
 
-	shot1, err := utils.CreateClip(session)
-	if err != nil {
-		t.Error(err)
-		return nil
+	clip = utils.CreateClip(session)
+
+	clip.Camera.Transform.Orientation.RotateZ(math.Pi)
+	clip.Camera.Transform.Position.Set(200, 0, 150)
+
+	//shot1.MapName = "maps/dota.vmap"
+	return nil
+
+}
+
+func getCharacter(name string) (*sfm.AnimationSet, error) {
+	if c, exist := characters[name]; exist {
+		return c, nil
 	}
 
-	shot1.Camera.Transform.Orientation.RotateZ(math.Pi)
-	shot1.Camera.Transform.Position.Set(200, 0, 150)
-	shot1.Camera.ZFar = 50000
-
-	shot1.MapName = "maps/dota.vmap"
-
-	as, err := c.CreateGameModel(shot1)
+	c, err := dota2.NewCharacter(name)
 	if err != nil {
-		t.Error(err)
-		return nil
+		return nil, err
 	}
 
-	err = utils.PlaySequence(as, "idle", shot1.GetDuration())
+	as, err := c.CreateGameModel(clip)
 	if err != nil {
-		t.Error(err)
-		return nil
+		return nil, err
 	}
-	return as
+
+	tc := as.GetTransformControl("rootTransform")
+	//var posLayer *sfm.LogLayer[vector.Vector3[float32]]
+	//var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
+	if tc == nil {
+		return nil, errors.New("unable to get rootTransform")
+	}
+
+	//posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
+	//rotLayer = any(tc.OrientationChannel.Log.GetLayer("quaternion log")).(*sfm.LogLayer[vector.Quaternion[float32]])
+
+	/*
+		s2Model, err := GetModel("dota2", model.ModelName)
+		if err != nil {
+			return err
+		}
+
+		seq, err := s2Model.GetSequenceByName(animation)
+		if err != nil {
+			return err
+		}*/
+
+	/*
+		if posLayer == nil {
+			t.Error("posLayer == nil")
+			return
+		}
+		if rotLayer == nil {
+			t.Error("rotLayer == nil")
+			return
+		}*/
+	/*
+		if err = utils.PlaySequence(as, "idle", clip.GetDuration()); err != nil {
+			return nil, err
+		}
+	*/
+	characters[name] = as
+
+	return as, nil
 }
 
 func writeSession(t *testing.T) {
-	err := session.WriteTextFile(path.Join(varFolder, "test_session.dmx"))
+	err := session.WriteBinaryFile(path.Join(varFolder, "test_session.dmx"))
 	if err != nil {
 		t.Error(err)
 		return
 	}
+}
+
+func TestTick(t *testing.T) {
+	// Create a new parser instance from a file. Alternatively see NewParser([]byte)
+	filename := "./var/7865849382.dem"
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("unable to open file: %s", err)
+	}
+	defer f.Close()
+
+	p, err := manta.NewStreamParser(f)
+	if err != nil {
+		log.Fatalf("unable to create parser: %s", err)
+	}
+
+	log.Println("start")
+	log.Println(p.GetLastTick())
 }

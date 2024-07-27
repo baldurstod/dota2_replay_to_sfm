@@ -10,6 +10,10 @@ require (
 	github.com/baldurstod/manta v0.0.0-20240727101018-e65b4ef34794
 )
 
+replace github.com/baldurstod/manta v0.0.0-20240727101018-e65b4ef34794 => K:/Projects/github/manta
+replace github.com/baldurstod/go-sfm v0.0.2 => K:/Projects/github/go-sfm
+replace github.com/baldurstod/go-source2-tools v0.0.29 => K:/Projects/github/go-source2-tools
+
 require (
 	github.com/NublyBR/go-vpk v0.0.0-20240228030726-b1042e92ce58 // indirect
 	github.com/baldurstod/go-dmx v0.0.23 // indirect
