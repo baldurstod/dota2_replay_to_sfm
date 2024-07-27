@@ -16,11 +16,11 @@ require (
 	github.com/baldurstod/vdf v0.0.8 // indirect
 	github.com/davecgh/go-spew v1.1.0 // indirect
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 )
