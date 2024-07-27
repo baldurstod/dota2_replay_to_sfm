@@ -13,8 +13,8 @@ import (
 	"github.com/baldurstod/go-sfm/utils"
 	"github.com/baldurstod/go-sfm/utils/dota2"
 	"github.com/baldurstod/go-vector"
-	"github.com/dotabuff/manta"
-	"github.com/dotabuff/manta/dota"
+	"github.com/baldurstod/manta"
+	"github.com/baldurstod/manta/dota"
 )
 
 const DEG_TO_RAD = math.Pi / 180

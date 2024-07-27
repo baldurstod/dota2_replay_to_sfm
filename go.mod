@@ -7,7 +7,7 @@ require (
 	github.com/baldurstod/go-sfm v0.0.2
 	github.com/baldurstod/go-source2-tools v0.0.29
 	github.com/baldurstod/go-vector v0.0.6
-	github.com/dotabuff/manta v1.4.3
+	github.com/baldurstod/manta v0.0.0-20240727101018-e65b4ef34794
 )
 
 require (
