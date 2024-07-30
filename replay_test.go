@@ -207,7 +207,6 @@ func initDota() error {
 var session *sfm.Session
 
 func initSession() error {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	if err := initDota(); err != nil {
 		return err

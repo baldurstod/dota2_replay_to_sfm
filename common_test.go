@@ -12,12 +12,7 @@ func initRepo() bool {
 	return true
 }
 
-func initLogs() bool {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	return true
-}
-
 var _ = initRepo()
-var _ = initLogs()
+var _ = func() bool { log.SetFlags(log.LstdFlags | log.Lshortfile); return true }()
 
 const varFolder = "./var/"
