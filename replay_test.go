@@ -27,6 +27,7 @@ var clip *sfm.FilmClip
 func TestReplay(t *testing.T) {
 	// Create a new parser instance from a file. Alternatively see NewParser([]byte)
 	filename := "./var/7865917356.dem"
+	filename = "./var/7865849382.dem"
 	//filename = "./var/7382065860_1966034883.dem"
 	f, err := os.Open(filename)
 	if err != nil {

@@ -2,12 +2,8 @@ github.com/NublyBR/go-vpk v0.0.0-20240228030726-b1042e92ce58 h1:LNmGUHSpLUw3wQBE
 github.com/NublyBR/go-vpk v0.0.0-20240228030726-b1042e92ce58/go.mod h1:bKkLG1OoSAlGpkY/NvnavzvV+xIpQDn4rTggf/jkDwQ=
 github.com/baldurstod/go-dmx v0.0.23 h1:uIE8tWVbPAkcsMKjDtBEtgpeimT5EKDPB1niJNeI4io=
 github.com/baldurstod/go-dmx v0.0.23/go.mod h1:BS5jlvFMs3liLaqusTuBGeMyz1HmeXzbKp6DhZ+AwU8=
-github.com/baldurstod/go-dota2 v0.0.5 h1:NajkY2umEk132Ymeaoz9eU342yKU3/eD4gjgzQXbZ5M=
-github.com/baldurstod/go-dota2 v0.0.5/go.mod h1:AkVKcwKi08I5A7AB5qqumpih0djOnif4Kq9FxAzVGLo=
-github.com/baldurstod/go-sfm v0.0.2 h1:a+dWxdvgiIDolqObHKRbSFskdJEMzcdv1ZgkWilTbIo=
-github.com/baldurstod/go-sfm v0.0.2/go.mod h1:Q72XQom3fnjjTdrvogqRJzA+oHuj/U6nJWZxM7bJ4wo=
-github.com/baldurstod/go-source2-tools v0.0.29 h1:FwPQeQa8/KP3+xw1zxyFlUAqKVu/5afPn0+qMqgrZF4=
-github.com/baldurstod/go-source2-tools v0.0.29/go.mod h1:cf7lt2mRqkxLnmfekCsUftJg469+qvviWsk9N4skDw0=
+github.com/baldurstod/go-dota2 v0.0.6 h1:XBdyF2/4a2EIG+ZM6eQ68wGbaLUYJR6jMVWxpx1xlk4=
+github.com/baldurstod/go-dota2 v0.0.6/go.mod h1:AkVKcwKi08I5A7AB5qqumpih0djOnif4Kq9FxAzVGLo=
 github.com/baldurstod/go-vector v0.0.6 h1:jv5gP+g/WbOcDSiZCgMLpEHQzkhX9PinLqt/KXOboMY=
 github.com/baldurstod/go-vector v0.0.6/go.mod h1:B1yNl2t+n/Zf+pR/hdLCYpUvd+FAHt/Cx9kqVKNsN1o=
 github.com/baldurstod/vdf v0.0.8 h1:QfSbWpbtlC8hcGVuUndxB96wY1BEPJtT3WRGQwvF0NE=

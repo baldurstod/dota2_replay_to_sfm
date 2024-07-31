@@ -3,7 +3,7 @@ module github.com/baldurstod/dota2_replay_to_sfm
 go 1.22.4
 
 require (
-	github.com/baldurstod/go-dota2 v0.0.5
+	github.com/baldurstod/go-dota2 v0.0.7
 	github.com/baldurstod/go-sfm v0.0.2
 	github.com/baldurstod/go-source2-tools v0.0.29
 	github.com/baldurstod/go-vector v0.0.6
@@ -11,8 +11,12 @@ require (
 )
 
 replace github.com/baldurstod/manta v0.0.0-20240727101018-e65b4ef34794 => K:/Projects/github/manta
+
 replace github.com/baldurstod/go-sfm v0.0.2 => K:/Projects/github/go-sfm
+
 replace github.com/baldurstod/go-source2-tools v0.0.29 => K:/Projects/github/go-source2-tools
+
+replace github.com/baldurstod/go-dota2 => K:/Projects/github/go-dota2
 
 require (
 	github.com/NublyBR/go-vpk v0.0.0-20240228030726-b1042e92ce58 // indirect
