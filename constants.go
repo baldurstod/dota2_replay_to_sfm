@@ -1,0 +1,3 @@
+package main
+
+const BASE_STEAM_ID = 76561197960265728
