@@ -105,6 +105,15 @@ func TestReplay(t *testing.T) {
 			a.AddUnit(m, handle)
 		}
 
+		//if strings.HasPrefix(className, "CDOTA_Ability_") {
+		if strings.HasPrefix(className, "CDynamicProp") {
+			idx, found := m["m_pEntity.m_nameStringableIndex"]
+			if found {
+				name, found := p.LookupStringByIndex("EntityNames", idx.(int32))
+				log.Println(e.GetClassName(), name, found)
+			}
+		}
+
 		//"CDOTATeam"
 		//log.Println(e, op)
 		if int32(p.Tick) < firstTick {
@@ -159,7 +168,7 @@ func TestReplay(t *testing.T) {
 				return nil
 			}
 
-			as, c, err := getCharacter(ownerEntity.(uint64), name)
+			c, err := getCharacter(ownerEntity.(uint64), name)
 			if err != nil {
 				t.Error(err)
 				return nil
@@ -172,12 +181,18 @@ func TestReplay(t *testing.T) {
 			}
 			//}
 
+			as, err := createCharacterModel(ownerEntity.(uint64), name)
+			if err != nil {
+				t.Error(err)
+				return nil
+			}
+
 			//log.Println(e, p)
 			if firstTick == 0 {
 				firstTick = int32(p.Tick)
 			}
 
-			tc := as.GetTransformControl("rootTransform")
+			tc := as.GetTransformControl(sfm.ROOT_TRANSFORM)
 			var posLayer *sfm.LogLayer[vector.Vector3[float32]]
 			var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
 			posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
@@ -315,26 +330,34 @@ func initSession() error {
 
 }
 
-func getCharacter(owner uint64, name string) (*sfm.AnimationSet, *dota2.Character, error) {
-	if c, exist := characters[owner]; exist {
-		return c, characters2[owner], nil
+func getCharacter(owner uint64, name string) (*dota2.Character, error) {
+	if c, exist := characters2[owner]; exist {
+		return c, nil
 	}
 
 	c, err := dota2.NewCharacter(name)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
+	}
+	characters2[owner] = c
+	return c, nil
+}
+
+func createCharacterModel(owner uint64, name string) (*sfm.AnimationSet, error) {
+	if c, exist := characters[owner]; exist {
+		return c, nil
 	}
 
-	as, err := c.CreateGameModel(clip)
+	as, err := characters2[owner].CreateGameModel(clip)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	tc := as.GetTransformControl("rootTransform")
+	tc := as.GetTransformControl(sfm.ROOT_TRANSFORM)
 	//var posLayer *sfm.LogLayer[vector.Vector3[float32]]
 	//var rotLayer *sfm.LogLayer[vector.Quaternion[float32]]
 	if tc == nil {
-		return nil, nil, errors.New("unable to get rootTransform")
+		return nil, errors.New("unable to get rootTransform")
 	}
 
 	//posLayer = any(tc.PositionChannel.Log.GetLayer("vector3 log")).(*sfm.LogLayer[vector.Vector3[float32]])
@@ -366,9 +389,8 @@ func getCharacter(owner uint64, name string) (*sfm.AnimationSet, *dota2.Characte
 		}
 	*/
 	characters[owner] = as
-	characters2[owner] = c
 
-	return as, c, nil
+	return as, nil
 }
 
 func writeSession(t *testing.T) {
