@@ -8,7 +8,7 @@ import (
 type Replay struct {
 	playersByHandle    map[uint64]uint64
 	playersByAccountId map[uint64]uint64
-	itemsPerAccount    map[uint64]map[uint32]struct{}
+	itemsPerAccount    map[uint64]map[uint32]int
 	units              map[uint64]uint64
 }
 
@@ -16,7 +16,7 @@ func NewReplay() *Replay {
 	return &Replay{
 		playersByHandle:    make(map[uint64]uint64),
 		playersByAccountId: make(map[uint64]uint64),
-		itemsPerAccount:    make(map[uint64]map[uint32]struct{}),
+		itemsPerAccount:    make(map[uint64]map[uint32]int),
 		units:              make(map[uint64]uint64),
 	}
 }
@@ -26,11 +26,11 @@ func (r *Replay) AddWearable(attributes map[string]any) error {
 	var ok bool
 	var itemDefinitionIndex uint32
 	var accountID uint64
+	var overrideStyle uint32
 
 	if value, ok = attributes["m_iItemDefinitionIndex"]; !ok {
 		return errors.New("can find m_iItemDefinitionIndex")
 	}
-
 	if itemDefinitionIndex, ok = value.(uint32); !ok {
 		return errors.New("wrong type for m_iItemDefinitionIndex")
 	}
@@ -38,15 +38,21 @@ func (r *Replay) AddWearable(attributes map[string]any) error {
 	if value, ok = attributes["m_iAccountID"]; !ok {
 		return errors.New("can find m_iAccountID")
 	}
-
 	if accountID, ok = value.(uint64); !ok {
 		return errors.New("wrong type for m_iAccountID")
 	}
 
-	if _, ok = r.itemsPerAccount[accountID]; !ok {
-		r.itemsPerAccount[accountID] = map[uint32]struct{}{}
+	if value, ok = attributes["m_nOverrideStyle"]; !ok {
+		return errors.New("can find m_nOverrideStyle")
 	}
-	r.itemsPerAccount[accountID][itemDefinitionIndex] = struct{}{}
+	if overrideStyle, ok = value.(uint32); !ok {
+		return errors.New("wrong type for m_nOverrideStyle")
+	}
+
+	if _, ok = r.itemsPerAccount[accountID]; !ok {
+		r.itemsPerAccount[accountID] = map[uint32]int{}
+	}
+	r.itemsPerAccount[accountID][itemDefinitionIndex] = int(overrideStyle)
 
 	return nil
 }
@@ -93,7 +99,7 @@ func (r *Replay) GetItems(handle uint64) []string {
 
 	var ownerId uint64
 	var accountId uint64
-	var items map[uint32]struct{}
+	var items map[uint32]int
 	var ok bool
 
 	if ownerId, ok = r.units[handle]; !ok {
